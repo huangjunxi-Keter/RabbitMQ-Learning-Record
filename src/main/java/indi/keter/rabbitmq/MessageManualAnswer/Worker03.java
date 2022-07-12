@@ -32,7 +32,9 @@ public class Worker03 {
 
         //设置不公平分发
         //RabbitMQ中的概念，channel.basicQos(1)指该消费者在接收到队列里的消息但没有返回确认结果之前,队列不会将新的消息分发给该消费者。队列中没有被消费的消息不会被删除，还是存在于队列中。
-        int prefetchCount = 1;
+        //int prefetchCount = 1;
+        //预取值 在信道中能存在的消息数量（已被处理完成的消息不占用信道）
+        int prefetchCount = 5;
         channel.basicQos(prefetchCount);
 
         //手动应答

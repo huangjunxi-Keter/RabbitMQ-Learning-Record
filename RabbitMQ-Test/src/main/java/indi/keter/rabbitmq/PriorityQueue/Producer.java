@@ -1,19 +1,20 @@
-package indi.keter.rabbitmq.HelloWorld;
+package indi.keter.rabbitmq.PriorityQueue;
 
 /*
-*生产者 ： 发消息
+*生产者 ： 发消息（优先级队列）
  */
 
+import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Producer {
     //消息队列
-    //public static final String QUEUE_NAME = "hello";
-    //镜像队列的名称 策略在管理网站中设置（正则表达式识别要备份的队列/交换机，备份数量，.....）
-    //设置备份数量2【目标机器一份，备份机器一份(随机)】，其中一台机器宕机宕机 会再在集群中的其他机器上建立一个备份（始终保持总量为2）
-    public static final String QUEUE_NAME = "mirrior_hello";
+    public static final String QUEUE_NAME = "hello";
 
     //发消息
     public static void main(String[] args) throws Exception {
@@ -36,17 +37,25 @@ public class Producer {
         * 4.是否自动删除（最后一个消费者断开连接之后是否删除队列）
         * 5.其他参数
         */
-        channel.queueDeclare(QUEUE_NAME, true, false, false, null);
+        Map<String, Object> arguments = new HashMap<>(1);
+        arguments.put("x-max-priority", 10); //官方允许是0-255之间 此处设置10 允许优化级范围为0-10
+        channel.queueDeclare(QUEUE_NAME, true, false, true, arguments);
         //发消息
-        String message = "Hello World";
-        /*
-         *生成一个队列
-         * 1.交换机
-         * 2.路由的Key值是哪个（本次是队列名）
-         * 3.其他参数
-         * 4.发送消息的消息体
-         */
-        channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
+        for (int i = 1; i <= 10; i++) {
+            String message = "info" + i;
+            AMQP.BasicProperties properties = null;
+            if (i == 5) {
+                properties = new AMQP.BasicProperties().builder().priority(5).build();
+            }
+            /*
+             *生成一个队列
+             * 1.交换机
+             * 2.路由的Key值是哪个（本次是队列名）
+             * 3.其他参数
+             * 4.发送消息的消息体
+             */
+            channel.basicPublish("", QUEUE_NAME, properties, message.getBytes());
+        }
 
         System.out.println("消息发送完毕");
     }

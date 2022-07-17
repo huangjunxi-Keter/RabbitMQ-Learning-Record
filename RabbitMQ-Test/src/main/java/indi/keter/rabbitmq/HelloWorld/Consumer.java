@@ -8,7 +8,7 @@ import com.rabbitmq.client.*;
 
 public class Consumer {
     //队列名称
-    public static final String QUEUE_NAME = "hello";
+    public static final String QUEUE_NAME = "mirrior_hello";
     //接收消息
     public static void main(String[] args) throws Exception {
         //创建连接工厂
